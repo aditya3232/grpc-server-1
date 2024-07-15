@@ -50,5 +50,5 @@ go mod tidy
 ### Run GRPC server
 
 ```bash
-go run cmd/grpc/main.go
+go run cmd/main.go
 ```

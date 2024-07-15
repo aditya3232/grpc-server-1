@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package hello;
+package user;
 
 
 option go_package = "grpc-server-1/protogen/user";

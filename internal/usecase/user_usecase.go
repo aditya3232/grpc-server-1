@@ -45,9 +45,12 @@ func (u *UserUseCase) GetUser(ctx context.Context, request *user.UserRequest) (*
 	}
 
 	return &user.UserResponse{
-		Id:         newUser.ID,
-		Name:       newUser.Name,
-		Occupation: newUser.Occupation,
+		Id:             newUser.ID,
+		Name:           newUser.Name,
+		Occupation:     newUser.Occupation,
+		Email:          newUser.Email,
+		AvatarFileName: newUser.AvatarFileName,
+		Role:           newUser.Role,
 	}, nil
 
 }
