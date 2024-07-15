@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "grpc-server-1"
+  },
+  "log": {
+    "level": 6
+  },
+  "database": {
+    "username": "root",
+    "password": "root_password",
+    "host": "localhost",
+    "port": 5432,
+    "name": "postgres",
+    "pool": {
+      "idle": 10,
+      "max": 100,
+      "lifetime": 300
+    }
+  },
+  "grpc": {
+    "port": 9090
+  }
+}
