@@ -123,3 +123,61 @@ func (u *UserUseCase) CreateUser(ctx context.Context, request *user.UserRequest)
 		},
 	}, nil
 }
+
+func (u *UserUseCase) SearchUser(ctx context.Context, request *user.UserSearchRequest) (*user.PaginatedUserResponse, error) {
+	tx := u.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	if request == nil {
+		u.Log.Error("nil request received")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid request")
+	}
+
+	if request.Page == 0 {
+		request.Page = 1
+	}
+
+	if request.Size == 0 {
+		request.Size = 10 // Set a default size, e.g., 10 items per page
+	}
+
+	newUsers, total, err := u.UserRepository.Search(tx, request)
+	if err != nil {
+		u.Log.WithError(err).Error("error searching user")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		u.Log.WithError(err).Error("error committing transaction")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	// Prepare user data responses
+	var userDataResponses []*user.UserData
+	for _, users := range newUsers {
+		userDataResponses = append(userDataResponses, &user.UserData{
+			Id:         users.ID,
+			Name:       users.Name,
+			Occupation: users.Occupation,
+			Email:      users.Email,
+			Role:       users.Role,
+			CreatedAt:  users.CreatedAt.String(),
+			UpdatedAt:  users.UpdatedAt.String(),
+		})
+	}
+
+	// Calculate pagination
+	paging := &user.Paging{
+		Page:      request.Page,
+		Size:      request.Size,
+		TotalItem: total,
+		TotalPage: (total + request.Size - 1) / request.Size, // Calculate total pages
+	}
+
+	paginatedResponse := &user.PaginatedUserResponse{
+		Data:   userDataResponses,
+		Paging: paging,
+	}
+
+	return paginatedResponse, nil
+}
