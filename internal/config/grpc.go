@@ -52,3 +52,7 @@ func (a *GrpcAdapter) Stop() {
 func (a *GrpcAdapter) GetUser(ctx context.Context, req *user.UserRequest) (*user.UserResponse, error) {
 	return a.UserUseCase.GetUser(ctx, req)
 }
+
+func (a *GrpcAdapter) CreateUser(ctx context.Context, req *user.UserRequest) (*user.UserResponse, error) {
+	return a.UserUseCase.CreateUser(ctx, req)
+}
