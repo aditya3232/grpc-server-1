@@ -181,3 +181,54 @@ func (u *UserUseCase) SearchUser(ctx context.Context, request *user.UserSearchRe
 
 	return paginatedResponse, nil
 }
+
+func (u *UserUseCase) UpdateUser(ctx context.Context, request *user.UserRequest) (*user.UserResponse, error) {
+	tx := u.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	if request == nil {
+		u.Log.Error("nil request received")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid request")
+	}
+
+	newUser := new(entity.User)
+	if err := u.UserRepository.FindById(tx, newUser, request.Id); err != nil {
+		u.Log.WithError(err).Error("error finding user")
+		return nil, status.Errorf(codes.NotFound, "data not found")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.PasswordHash), bcrypt.MinCost)
+	if err != nil {
+		u.Log.WithError(err).Error("error hashing password")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	newUser.Name = request.Name
+	newUser.Occupation = request.Occupation
+	newUser.Email = request.Email
+	newUser.PasswordHash = string(hashedPassword)
+	newUser.Role = request.Role
+
+	if err := u.UserRepository.Update(tx, newUser); err != nil {
+		u.Log.WithError(err).Error("error updating user")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		u.Log.WithError(err).Error("error committing transaction")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	return &user.UserResponse{
+		Data: &user.UserData{
+			Id:         newUser.ID,
+			Name:       newUser.Name,
+			Occupation: newUser.Occupation,
+			Email:      newUser.Email,
+			Role:       newUser.Role,
+			CreatedAt:  newUser.CreatedAt.String(),
+			UpdatedAt:  newUser.UpdatedAt.String(),
+		},
+	}, nil
+
+}

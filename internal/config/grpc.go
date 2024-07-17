@@ -60,3 +60,7 @@ func (a *GrpcAdapter) CreateUser(ctx context.Context, req *user.UserRequest) (*u
 func (a *GrpcAdapter) SearchUser(ctx context.Context, req *user.UserSearchRequest) (*user.PaginatedUserResponse, error) {
 	return a.UserUseCase.SearchUser(ctx, req)
 }
+
+func (a *GrpcAdapter) UpdateUser(ctx context.Context, req *user.UserRequest) (*user.UserResponse, error) {
+	return a.UserUseCase.UpdateUser(ctx, req)
+}
