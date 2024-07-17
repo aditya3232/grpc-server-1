@@ -232,3 +232,28 @@ func (u *UserUseCase) UpdateUser(ctx context.Context, request *user.UserRequest)
 	}, nil
 
 }
+
+func (u *UserUseCase) DeleteUser(ctx context.Context, request *user.UserRequest) (*user.DeleteUserResponse, error) {
+	tx := u.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
+
+	newUser := new(entity.User)
+	if err := u.UserRepository.FindById(tx, newUser, request.Id); err != nil {
+		u.Log.WithError(err).Error("error getting user")
+		return nil, status.Errorf(codes.NotFound, "not found error")
+	}
+
+	if err := u.UserRepository.Delete(tx, newUser); err != nil {
+		u.Log.WithError(err).Error("error deleting user")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		u.Log.WithError(err).Error("error deleting user")
+		return nil, status.Errorf(codes.Internal, "internal server error")
+	}
+
+	return &user.DeleteUserResponse{
+		Status: "delete success",
+	}, nil
+}

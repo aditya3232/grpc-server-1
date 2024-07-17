@@ -64,3 +64,7 @@ func (a *GrpcAdapter) SearchUser(ctx context.Context, req *user.UserSearchReques
 func (a *GrpcAdapter) UpdateUser(ctx context.Context, req *user.UserRequest) (*user.UserResponse, error) {
 	return a.UserUseCase.UpdateUser(ctx, req)
 }
+
+func (a *GrpcAdapter) DeleteUser(ctx context.Context, req *user.UserRequest) (*user.DeleteUserResponse, error) {
+	return a.UserUseCase.DeleteUser(ctx, req)
+}
